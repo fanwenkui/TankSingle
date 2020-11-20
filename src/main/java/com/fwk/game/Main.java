@@ -1,5 +1,8 @@
 package com.fwk.game;
 
+import com.fwk.game.tank.Audio;
+import com.fwk.game.tank.TankFrame;
+
 public class Main {
 
 	public static void main(String[] args) throws InterruptedException {
