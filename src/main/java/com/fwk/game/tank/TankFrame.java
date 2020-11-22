@@ -1,35 +1,51 @@
 package com.fwk.game.tank;
 
+import com.fwk.game.net.TankJoinMsg;
+
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 public class TankFrame extends Frame {
+	public static TankFrame INSTANCE=new TankFrame();
 
-	Tank myTank = new Tank(200, 400, Dir.DOWN, Group.GOOD, this);
+	public Tank getMyTank() {
+		return myTank;
+	}
+
+	public boolean hasId(UUID id){
+		return tanks.containsKey(id);
+	}
+
+	public void tankJoin(TankJoinMsg joinMsg){
+		Tank tank=new Tank(joinMsg);
+		this.tanks.put(joinMsg.id,tank);
+	}
+
+	Tank myTank = new Tank(new Random().nextInt(GAME_WIDTH), new Random().nextInt(GAME_HEIGHT), Dir.DOWN, Group.GOOD, this);
 	List<Bullet> bullets = new ArrayList<>();
-	List<Tank> tanks = new ArrayList<>();
+	Map<UUID,Tank> tanks = new HashMap<>();
 	List<Explode> explodes = new ArrayList<>();
 	
 	
 	static final int GAME_WIDTH = 1080, GAME_HEIGHT = 960;
 
-	public TankFrame() {
+	private TankFrame() {
 		setSize(GAME_WIDTH, GAME_HEIGHT);
 		setResizable(false);
 		setTitle("tank war");
-		setVisible(true);
+//		setVisible(true);
 
 		this.addKeyListener(new MyKeyListener());
 
 		addWindowListener(new WindowAdapter() {
 
 			@Override
-			public void windowClosing(WindowEvent e) { // bjmashibing/tank
+			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
 
@@ -66,9 +82,7 @@ public class TankFrame extends Frame {
 			bullets.get(i).paint(g);
 		}
 		
-		for (int i = 0; i < tanks.size(); i++) {
-			tanks.get(i).paint(g);
-		}
+		tanks.values().stream().forEach(t->{t.paint(g);});
 		
 		for (int i = 0; i < explodes.size(); i++) {
 			explodes.get(i).paint(g);
@@ -79,17 +93,6 @@ public class TankFrame extends Frame {
 			for(int j = 0; j<tanks.size(); j++) 
 				bullets.get(i).collideWith(tanks.get(j));
 		}
-		
-		
-		
-		// for(Iterator<Bullet> it = bullets.iterator(); it.hasNext();) {
-		// Bullet b = it.next();
-		// if(!b.live) it.remove();
-		// }
-
-		// for(Bullet b : bullets) {
-		// b.paint(g);
-		// }
 
 	}
 

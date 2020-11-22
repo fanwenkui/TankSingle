@@ -43,6 +43,6 @@ public class ServerFrame extends Frame {
     }
 
     public void updateClientMsg(String string) {
-        this.taRight.setText(string + System.getProperty("line.separator"));
+        this.taRight.append(string + System.getProperty("line.separator"));
     }
 }

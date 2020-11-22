@@ -1,5 +1,7 @@
 package com.fwk.game.net;
 
+import com.fwk.game.tank.Tank;
+import com.fwk.game.tank.TankFrame;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -42,14 +44,28 @@ public class Client {
     class ClientChannelInitializer extends ChannelInitializer {
         @Override
         protected void initChannel(Channel channel) throws Exception {
-            channel.pipeline().addLast(new ChannelHandler());
+            channel.pipeline()
+                    .addLast(new TankJoinMsgDecoder())
+                    .addLast(new TankJoinMsgEncoder())
+                    .addLast(new ChannelHandler());
         }
     }
 
     class ChannelHandler extends ChannelInboundHandlerAdapter {
         @Override
+        public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            Tank tank= TankFrame.INSTANCE.getMyTank();
+            ctx.channel().writeAndFlush(new TankJoinMsg(tank.getX(),tank.getY(),tank.getDir(),tank.isMoving(),tank.getGroup(),tank.getId()));
+        }
+
+        @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            super.channelRead(ctx, msg);
+            TankJoinMsg tankJoinMsg=(TankJoinMsg) msg;
+            if(tankJoinMsg.id.equals(TankFrame.INSTANCE.getMyTank().getId()) || TankFrame.INSTANCE.hasId(tankJoinMsg.id)){
+                return;
+            }
+            TankFrame.INSTANCE.tankJoin(tankJoinMsg);
+            ctx.channel().writeAndFlush(new TankJoinMsg(TankFrame.INSTANCE.getMyTank()));
         }
     }
 }

@@ -31,7 +31,10 @@ public class Server {
     class ServerChannelInitializer extends ChannelInitializer {
         @Override
         protected void initChannel(Channel channel) throws Exception {
-            channel.pipeline().addLast(new ChannelHandler());
+            channel.pipeline()
+                    .addLast(new TankJoinMsgDecoder())
+                    .addLast(new TankJoinMsgEncoder())
+                    .addLast(new ChannelHandler());
             clients.add(channel);
         }
     }
@@ -39,7 +42,9 @@ public class Server {
     class ChannelHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-            super.channelRead(ctx, msg);
+            TankJoinMsg tankJoinMsg=(TankJoinMsg)msg;
+            ServerFrame.INSTANCE.updateClientMsg(tankJoinMsg.toString());
+            clients.writeAndFlush(msg);
         }
     }
 }

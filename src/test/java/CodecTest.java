@@ -1,10 +1,14 @@
-import com.fwk.game.net.TankMsg;
-import com.fwk.game.net.TankMsgDecode;
-import com.fwk.game.net.TankMsgEncode;
+import com.fwk.game.net.TankJoinMsg;
+import com.fwk.game.net.TankJoinMsgDecoder;
+import com.fwk.game.net.TankJoinMsgEncoder;
+import com.fwk.game.tank.Dir;
+import com.fwk.game.tank.Group;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Test;
+
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,8 +16,8 @@ public class CodecTest {
     @Test
     public void encode(){
         EmbeddedChannel channel=new EmbeddedChannel();
-        TankMsg msg=new TankMsg(5,6);
-        channel.pipeline().addLast(new TankMsgEncode());
+        TankJoinMsg msg=new TankJoinMsg(5,6, Dir.DOWN,false, Group.GOOD, UUID.randomUUID());
+        channel.pipeline().addLast(new TankJoinMsgEncoder());
         channel.writeOutbound(msg);
 
         ByteBuf buf = (ByteBuf)channel.readOutbound();
@@ -26,15 +30,15 @@ public class CodecTest {
     @Test
     public void decode(){
         EmbeddedChannel channel=new EmbeddedChannel();
-        channel.pipeline().addLast(new TankMsgDecode());
+        channel.pipeline().addLast(new TankJoinMsgDecoder());
 
-        TankMsg msg=new TankMsg(1,2);
+        TankJoinMsg msg=new TankJoinMsg(1,2, Dir.DOWN,false, Group.GOOD, UUID.randomUUID());
         ByteBuf buf= Unpooled.buffer();
         buf.writeBytes(msg.toBytes());
 
         channel.writeInbound(buf.duplicate());
 
-        TankMsg resp=(TankMsg) channel.readInbound();
+        TankJoinMsg resp=(TankJoinMsg) channel.readInbound();
         assertEquals(1,resp.x);
         assertEquals(2,resp.y);
     }

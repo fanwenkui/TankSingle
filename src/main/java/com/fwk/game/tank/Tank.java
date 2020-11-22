@@ -1,7 +1,10 @@
 package com.fwk.game.tank;
 
+import com.fwk.game.net.TankJoinMsg;
+
 import java.awt.*;
 import java.util.Random;
+import java.util.UUID;
 
 public class Tank {
 	private static final int SPEED = 2;
@@ -17,11 +20,17 @@ public class Tank {
 
 	private Dir dir = Dir.DOWN;
 
-	private boolean moving = true;
+	private boolean moving = false;
 	private TankFrame tf = null;
 	private boolean living = true;
 	private Group group = Group.BAD;
-	
+
+	public UUID getId() {
+		return id;
+	}
+
+	private UUID id = UUID.randomUUID();
+
 	public Tank(int x, int y, Dir dir, Group group, TankFrame tf) {
 		super();
 		this.x = x;
@@ -29,11 +38,19 @@ public class Tank {
 		this.dir = dir;
 		this.group = group;
 		this.tf = tf;
-		
+
 		rect.x = this.x;
 		rect.y = this.y;
 		rect.width = WIDTH;
 		rect.height = HEIGHT;
+	}
+	public Tank(TankJoinMsg msg) {
+		this.x = msg.x;
+		this.y = msg.y;
+		this.dir = msg.dir;
+		this.moving = msg.moving;
+		this.group = msg.group;
+		this.id = msg.id;
 	}
 	public void fire() {
 		int bX = this.x + Tank.WIDTH/2 - Bullet.WIDTH/2;
@@ -113,7 +130,7 @@ public class Tank {
 	
 	public void paint(Graphics g) {
 		if(!living) tf.tanks.remove(this);
-		
+		//todo 可以把坦克名画出来，方便辨认
 		
 		
 		switch(dir) {
